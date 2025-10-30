@@ -1,7 +1,13 @@
 import { useFindHuecosByNichoQuery } from "./use-hueco-queries";
 import { useFindNichoByIdQuery } from "@/features/nichos/presentation/hooks/use-nicho-queries";
-import { useDeleteHuecoMutation, useCreateHuecoMutation } from "./use-hueco-mutations";
-import { HuecoEntity } from "../../domain/entities/hueco.entity";
+import {
+  useDeleteHuecoMutation,
+  useCreateHuecoMutation,
+} from "./use-hueco-mutations";
+import {
+  HuecoEntity,
+  CreateHuecoEntity,
+} from "../../domain/entities/hueco.entity";
 
 interface UseNichoHuecosListProps {
   nichoId: string;
@@ -9,9 +15,14 @@ interface UseNichoHuecosListProps {
 
 export function useNichoHuecosList({ nichoId }: UseNichoHuecosListProps) {
   // Queries
-  const { data: huecos, isLoading, error, refetch } = useFindHuecosByNichoQuery(nichoId);
+  const {
+    data: huecos,
+    isLoading,
+    error,
+    refetch,
+  } = useFindHuecosByNichoQuery(nichoId);
   const { data: nicho } = useFindNichoByIdQuery(nichoId);
-  
+
   // Mutations
   const { mutate: deleteHueco, isPending: isDeleting } = useDeleteHuecoMutation();
   const { mutate: createHueco, isPending: isCreating } = useCreateHuecoMutation();
@@ -19,17 +30,33 @@ export function useNichoHuecosList({ nichoId }: UseNichoHuecosListProps) {
   // Handlers
   const handleDelete = (id: string) => {
     deleteHueco(id, {
-      onSuccess: () => {
-        refetch();
-      },
+      onSuccess: () => refetch(),
     });
   };
 
-  const handleCreateHueco = () => {
-    createHueco({ idNicho: nichoId }, {
-      onSuccess: () => {
-        refetch();
-      },
+  /**
+   * Crea un hueco nuevo a partir de un formulario.
+   * Se acepta tanto un objeto CreateHuecoEntity como un FormData.
+   */
+  const handleCreateHueco = (data: CreateHuecoEntity | FormData) => {
+    let payload: FormData;
+
+    if (data instanceof FormData) {
+      // Si ya viene como FormData, lo usamos directamente
+      payload = data;
+    } else {
+      // Si viene como objeto CreateHuecoEntity, lo convertimos
+      payload = new FormData();
+      payload.append("idNicho", data.idNicho);
+      if (data.numeroHueco)
+        payload.append("numeroHueco", data.numeroHueco.toString());
+      if (data.estado) payload.append("estado", data.estado);
+      if (data.idFallecido) payload.append("idFallecido", data.idFallecido);
+      if (data.pdfFile) payload.append("pdfFile", data.pdfFile);
+    }
+
+    createHueco(payload, {
+      onSuccess: () => refetch(),
     });
   };
 
@@ -48,23 +75,21 @@ export function useNichoHuecosList({ nichoId }: UseNichoHuecosListProps) {
 
   const canCreateHueco = () => {
     if (!nicho || !huecos) return false;
-    
     const currentHuecos = huecos.length;
     const maxHuecos = getMaxHuecosByTipo(nicho.tipo);
-    
     return currentHuecos < maxHuecos;
   };
 
   const getCreateButtonMessage = () => {
     if (!nicho || !huecos) return "Crear Hueco";
-    
+
     const currentHuecos = huecos.length;
     const maxHuecos = getMaxHuecosByTipo(nicho.tipo);
-    
+
     if (currentHuecos >= maxHuecos) {
       return `Límite alcanzado (${maxHuecos}/${maxHuecos})`;
     }
-    
+
     return `Crear Hueco (${currentHuecos}/${maxHuecos})`;
   };
 
@@ -79,18 +104,18 @@ export function useNichoHuecosList({ nichoId }: UseNichoHuecosListProps) {
     nicho,
     isLoading,
     error,
-    
+
     // States
     isDeleting,
     isCreating,
-    
+
     // Handlers
     handleDelete,
     handleCreateHueco,
-    
+
     // Business Logic
     canCreateHueco,
     getCreateButtonMessage,
     canDeleteHueco,
   };
-} 
+}

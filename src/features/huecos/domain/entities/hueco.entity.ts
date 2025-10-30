@@ -20,10 +20,20 @@ export interface HuecoEntity {
 }
 
 export interface CreateHuecoEntity {
+  /** ID del nicho al que pertenece el hueco */
   idNicho: string;
+
+  /** Número del hueco (opcional, si el backend lo genera automáticamente) */
   numeroHueco?: number;
+
+  /** Estado del hueco (ej. disponible, ocupado, etc.) */
   estado?: string;
+
+  /** ID del fallecido asociado (si aplica) */
   idFallecido?: string;
+
+  /** Archivo PDF opcional (por ejemplo, requisitos o documentación) */
+  pdfFile?: File;
 }
 
 export interface UpdateHuecoEntity {

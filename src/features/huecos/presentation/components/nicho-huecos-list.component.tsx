@@ -13,6 +13,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import clsx from "clsx";
 import { StatusChip } from "../utils/status-chip";
 import { useNichoHuecosList } from "../hooks/use-nicho-huecos-list";
+import { ModalCrearHueco } from "./ModalCrearHueco";
+import { useState } from "react";
 
 
 interface NichoHuecosListProps {
@@ -33,20 +35,38 @@ export function NichoHuecosList({ nichoId }: NichoHuecosListProps) {
     canDeleteHueco,
   } = useNichoHuecosList({ nichoId });
 
+  const [openModal, setOpenModal] = useState(false);
+
+  const handleOpenModal = () => setOpenModal(true);
+  const handleCloseModal = () => setOpenModal(false);
+
+  const handleConfirmCreate = (data: { file: File; observacion: string }) => {
+  // Llamamos al hook de creación con los nuevos datos
+  const formData = new FormData();
+  formData.append("idNicho", nichoId);
+  formData.append("pdf", data.file);
+  formData.append("observacion", data.observacion);
+
+  handleCreateHueco(formData);
+  handleCloseModal();
+  };
+
+
   return (
     <div className="rounded-lg border bg-white p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-medium">Huecos</h3>
-        <Button 
-          onClick={handleCreateHueco}
-          disabled={isCreating || !canCreateHueco()}
-          size="sm"
-          className="gap-1"
-          variant={!canCreateHueco() ? "secondary" : "default"}
-        >
-          <Plus className="w-4 h-4" />
-          {isCreating ? "Creando..." : getCreateButtonMessage()}
-        </Button>
+        <Button
+  onClick={handleOpenModal}
+  disabled={isCreating || !canCreateHueco()}
+  size="sm"
+  className="gap-1"
+  variant={!canCreateHueco() ? "secondary" : "default"}
+>
+  <Plus className="w-4 h-4" />
+  {isCreating ? "Creando..." : getCreateButtonMessage()}
+</Button>
+
       </div>
       <div className="overflow-x-auto">
         <Table>
@@ -134,6 +154,13 @@ export function NichoHuecosList({ nichoId }: NichoHuecosListProps) {
           </TableBody>
         </Table>
       </div>
+      <ModalCrearHueco
+  open={openModal}
+  onClose={handleCloseModal}
+  onConfirm={handleConfirmCreate}
+  isLoading={isCreating}
+/>
     </div>
-  );
+  
+);
 } 
