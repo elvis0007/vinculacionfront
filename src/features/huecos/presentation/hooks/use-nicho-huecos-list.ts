@@ -35,27 +35,11 @@ export function useNichoHuecosList({ nichoId }: UseNichoHuecosListProps) {
   };
 
   /**
-   * Crea un hueco nuevo a partir de un formulario.
-   * Se acepta tanto un objeto CreateHuecoEntity como un FormData.
+   * Crea un hueco nuevo recibiendo directamente el objeto CreateHuecoEntity.
+   * El repositorio se encarga de construir el FormData con las claves correctas.
    */
-  const handleCreateHueco = (data: CreateHuecoEntity | FormData) => {
-    let payload: FormData;
-
-    if (data instanceof FormData) {
-      // Si ya viene como FormData, lo usamos directamente
-      payload = data;
-    } else {
-      // Si viene como objeto CreateHuecoEntity, lo convertimos
-      payload = new FormData();
-      payload.append("idNicho", data.idNicho);
-      if (data.numeroHueco)
-        payload.append("numeroHueco", data.numeroHueco.toString());
-      if (data.estado) payload.append("estado", data.estado);
-      if (data.idFallecido) payload.append("idFallecido", data.idFallecido);
-      if (data.pdfFile) payload.append("pdfFile", data.pdfFile);
-    }
-
-    createHueco(payload, {
+  const handleCreateHueco = (data: CreateHuecoEntity) => {
+    createHueco(data, {
       onSuccess: () => refetch(),
     });
   };

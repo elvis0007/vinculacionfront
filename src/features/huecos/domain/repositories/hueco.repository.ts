@@ -10,4 +10,5 @@ export interface HuecoRepository {
   delete(id: string): Promise<void>;
 
   findByCementerio(idCementerio: string): Promise<HuecoEntity[]>;
+  descargarArchivo(id: string): Promise<Blob>;
 } 

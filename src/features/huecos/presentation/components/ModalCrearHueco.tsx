@@ -22,6 +22,13 @@ export function ModalCrearHueco({ open, onClose, onConfirm, isLoading }: ModalCr
       alert("Por favor selecciona un PDF");
       return;
     }
+    // Logs de depuración
+    console.log("[ModalCrearHueco] Archivo seleccionado:", {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+    });
+    console.log("[ModalCrearHueco] Observación:", observacion);
     onConfirm({ file, observacion });
   };
 

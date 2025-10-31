@@ -16,7 +16,7 @@ interface AxiosConfig {
 
 const DEFAULT_CONFIG: AxiosConfig = {
   baseURL:
-    process.env.NEXT_PUBLIC_BACKEND_API_URL || "https://backend-cementerio-pillaro.onrender.com",
+    process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:3000",
   headers: {
     "Content-Type": "application/json",
   },
@@ -48,6 +48,30 @@ class AxiosClient {
         const token = useAuthStore.getState().token;
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
+        }
+
+        // Si el cuerpo es FormData, no forzar Content-Type JSON
+        if (config.data instanceof FormData) {
+          if (config.headers && 'Content-Type' in config.headers) {
+            delete (config.headers as Record<string, unknown>)[
+              'Content-Type'
+            ];
+          }
+          // Log de depuración de FormData (sin exponer token)
+          try {
+            const debugEntries: Array<{ key: string; value: unknown }> = [];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            for (const [key, value] of (config.data as any).entries()) {
+              if (value instanceof File) {
+                debugEntries.push({ key, value: { name: value.name, type: value.type, size: value.size } });
+              } else {
+                debugEntries.push({ key, value });
+              }
+            }
+            console.log('[AxiosClient] Enviando FormData:', debugEntries);
+          } catch (_e) {
+            // ignorar fallo de introspección
+          }
         }
 
         return config;
